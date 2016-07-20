@@ -1,0 +1,2 @@
+# for rvm installs, sets/enforces version and gemset 
+rvm ruby-2.2.5@contact-email-crawler
