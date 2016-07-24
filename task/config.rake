@@ -4,8 +4,10 @@
 
 namespace :config do
 
-  desc "creates public/private key-pair and pem"
   task :keys do
+    # creates symmetric keys required for encryption/decryption
+    # of secrets; do not execute this task once keys have been
+    # distrubted
     exec %{
       name=contact-email-crawler
       rm -rf /tmp/$name
@@ -30,55 +32,49 @@ namespace :config do
   desc "encrypt config"
   task :encrypt do
     command %{
-      rm -rf #{ home }/.stack/*
-      key="#{ home }/.stack/key"
-      openssl rand -base64 128 -out $key
+      name=contact-email-crawler
+      rm ./.config.yml
+      openssl rand -base64 128 -out ./key
 
-      find #{ home }/stack -name '*.yml' | while read file
-        do
-          path=`echo $file | sed 's/stack/.stack/'`
-          mkdir -p `dirname $path` > /dev/null 2>&1
-          cat $file | openssl \
-            enc \
-            -aes-256-cbc \
-            -salt \
-            -pass file:$key > $path
-      done
+      # encrypt config file and write to ./.config.yml
+      cat ./config.yml | openssl \
+        enc \
+        -aes-256-cbc \
+        -salt \
+        -pass file:./key > ./.config.yml
 
-      # finally encrypt key file
+      # encrypt key file rsa key
       cat $key | openssl \
         rsautl \
         -encrypt \
-        -inkey ~/.ssh/salt.public.pem \
-        -pubin > $key.encrypted
+        -inkey ~/.ssh/$name.public.pem \
+        -pubin > ./key.encrypted
 
-      rm $key
+      rm ./key
     }
   end
 
   desc "decrypt config"
   task :decrypt do
     command %{
-      rm -rf #{ home }/stack
-      key="#{ home }/.stack/key"
-      cat $key.encrypted | openssl \
+      name=contact-email-crawler
+      rm -rf ./config.yml
+
+      # decrypt key file
+      cat ./key.encrypted | openssl \
         rsautl \
         -decrypt \
-        -inkey ~/.ssh/salt.private.pem \
-          > $key
+        -inkey ~/.ssh/$name.private.pem \
+          > ./key
 
-      find #{ home }/.stack -name '*.yml' | while read file
-        do
-          path=`echo $file | sed 's/.stack/stack/'`
-          mkdir -p `dirname $path` > /dev/null 2>&1
-          cat $file | openssl \
+      # decrypt the secrets
+      cat ./.config.yml | openssl \
             enc \
             -d \
             -aes-256-cbc \
-            -pass file:$key > $path
-      done
+            -pass file:./key > ./config.yml
 
-      rm $key
+      rm ./key ./key.encrypted
     }
   end
 end
