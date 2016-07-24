@@ -16,7 +16,7 @@ namespace :redis do
       ) > /dev/null 2>&1
 
       # move redis.conf to docker mounted directory
-      sudo mkdir -p /docker/redis-0/`basename $path`
+      sudo mkdir -p /docker/redis-0/`dirname $path`
       sudo cp ./$path /docker/redis-0/$path
 
       sudo docker run \
