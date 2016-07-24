@@ -22,7 +22,7 @@ namespace :redis do
       sudo docker run \
         -d \
         --name=redis-0 \
-        --volume="/docker/redis-0/$path:$path"
+        --volume="/docker/redis-0/$path:$path" \
         --publish="0.0.0.0:9736:6379" \
           $image
     }
