@@ -31,7 +31,7 @@ namespace :config do
 
   desc "encrypt config"
   task :encrypt do
-    command %{
+    exec %{
       name=contact-email-crawler
       rm ./.config.yml
       openssl rand -base64 128 -out ./key
@@ -44,7 +44,7 @@ namespace :config do
         -pass file:./key > ./.config.yml
 
       # encrypt key file rsa key
-      cat $key | openssl \
+      cat ./key | openssl \
         rsautl \
         -encrypt \
         -inkey ~/.ssh/$name.public.pem \
@@ -56,7 +56,7 @@ namespace :config do
 
   desc "decrypt config"
   task :decrypt do
-    command %{
+    exec %{
       name=contact-email-crawler
       rm -rf ./config.yml
 
