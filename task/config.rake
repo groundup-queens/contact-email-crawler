@@ -74,7 +74,7 @@ namespace :config do
             -aes-256-cbc \
             -pass file:./key > ./config.yml
 
-      rm ./key ./key.encrypted
+      rm ./key
     }
   end
 end
