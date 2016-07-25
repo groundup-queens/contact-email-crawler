@@ -3,7 +3,7 @@ require "ostruct"
 
 def config
   @value ||= begin
-               root = YAML.load_file("../config.yml")
+               root = YAML.load_file("./config.yml")
                redis = OpenStruct.new(root["redis"])
                new_root = OpenStruct.new("redis" => redis)
                new_root
