@@ -24,10 +24,9 @@ namespace :redis do
         ./config.yml | tail -n +2`
       config=$( eval "echo \"`cat ./usr/local/etc/redis/redis.conf`\"" )
 
-
       # move redis.conf to docker mounted directory
       sudo mkdir -p /docker/redis-0/`dirname $path`
-      echo "$config" > /docker/redis-0/$path
+      echo "requirepass $password" > /docker/redis-0/$path
 
       sudo docker run \
         -d \
