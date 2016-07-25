@@ -13,11 +13,21 @@ namespace :redis do
       (
         sudo docker pull $image
         sudo docker rm -f redis-0
+        rake config:decrypt
       ) > /dev/null 2>&1
+
+      # get password from config; parse config yaml into
+      # key=value expressions which will place password into
+      # current context. Next we eval redis.conf file, interpolate
+      # password and write to docker path
+      eval `sed -e 's/:[^:\/\/]/="/g;s/$/"/g;s/ *=/=/g' \
+        ./config.yml | tail -n +2`
+      config=$( eval "echo \"`cat ./usr/local/etc/redis/redis.conf`\"" )
+
 
       # move redis.conf to docker mounted directory
       sudo mkdir -p /docker/redis-0/`dirname $path`
-      sudo cp ./$path /docker/redis-0/$path
+      echo "$config" > /docker/redis-0/$path
 
       sudo docker run \
         -d \
