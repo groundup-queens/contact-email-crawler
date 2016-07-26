@@ -8,16 +8,34 @@ task :sync, [ :remote ] do | t, arguments |
   command  %{
     key=__contact-email-crawler__
     brew install fswatch > /dev/null 2>&1
+    remote=#{ arguments[:remote] || 'pme-master' }
+
+    function fsync {
+      fswatch -0 $1 $key | xargs -0 -n1 -I {} \
+        rsync \
+          -azv \
+          --no-perms \
+          --no-owner \
+          --no-group \
+          --exclude=.git \
+          --exclude=pids \
+          --exclude=logs \
+          --omit-dir-times \
+          --delete \
+            $1/ $2
+    }
 
     # kill any previous fsync processes attached to this sync
     pkill -9 -f $key
 
     # below isnt working in rake context.. falling back
     # to ruby solution
-    #path=`pwd`
-    #repository=${path/$HOME/\~}
-    repository="#{ home.sub ENV['HOME'], '~' }"
-      fsync ./ #{ arguments[:remote] }:$repository $key \
-        > /tmp/sync.`basename $repository`.log 2>&1 &
+    path=`pwd`
+    repository=${path/$HOME/'~'}
+
+    fsync ./ $remote:$repository $key \
+      > /tmp/sync.`basename $repository`.log 2>&1 &
+
+    touch ./
   }
 end
