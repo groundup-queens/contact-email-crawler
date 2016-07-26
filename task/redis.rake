@@ -22,11 +22,13 @@ namespace :redis do
       # password and write to docker path
       eval `sed -e 's/:[^:\/\/]/="/g;s/$/"/g;s/ *=/=/g' \
         ./config.yml | tail -n +2`
-      config=$( eval "echo \"`cat ./usr/local/etc/redis/redis.conf`\"" )
+      config=$(
+        eval "echo \"`cat ./usr/local/etc/redis/redis.conf | sed -e '/^#/d'`\""
+      )
 
       # move redis.conf to docker mounted directory
       sudo mkdir -p /docker/redis-0/`dirname $path`
-      echo "requirepass $password" > /docker/redis-0/$path
+      echo "$config" > /docker/redis-0/$path
 
       sudo docker run \
         -d \
